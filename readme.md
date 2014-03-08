@@ -9,9 +9,10 @@ Run in raspberry
 
 ##Install Z-Way
 
-'''bash
+```bash
 # Installs razberry into raspbian -> run in raspberry connect via ssh pi@ip with pass: raspberry
 wget -q -O - razberry.z-wave.me/install | sudo bash
 sudo reboot
-'''
+
+
 Wait for rebooting and point your webbrowser to http://{yourraspberryip}:8083
