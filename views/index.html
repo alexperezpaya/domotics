@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Domotics</title>
+	
+	<style>
+
+		body {
+			background-color: #2E2E2E;
+			font-family: Helvetica;
+		}
+
+		.box {
+			text-align: center;
+			padding: 0 20px;
+		}
+		
+		.boxes {
+			margin: 0 auto;
+			text-align: center;
+		}
+
+		.inline {
+			display: inline-block;
+			margin: 0 auto;
+		}
+
+		.yellow {
+			color: #FFFF00;
+		}
+
+		.blue {
+			color: #00BFFF;
+		}
+
+		.red {
+			color: #FA5858;
+		}
+
+		.green {
+			color: #2EFE64;
+		}
+
+		.box_header {
+			color: white;
+		}
+
+	</style>
+
+</head>
+<body>
+	<div class="boxes middle">
+		<div class="box inline left">
+			
+			<h3 class="box_header">Humedad</h3>
+			<h1 class="blue" id="humidity"></h1>
+
+		</div>
+
+		<div class="box inline">
+			
+			<h3 class="box_header">Luminosidad</h3>
+			<h1 class="yellow" id="luminiscence"></h1>
+
+		</div>
+
+		<div class="box inline right">
+			
+			<h3 class="box_header">Temperatura</h3>
+			<h1 class="red" id="temperature"></h1>
+
+		</div>
+		
+		<div class="box inline right">
+			
+			<h3 class="box_header">Potencia</h3>
+			<h1 class="green" id="power"></h1>
+
+		</div>
+
+		<div class="box inline right">
+			
+			<h3 class="box_header">Encendido</h3>
+			<span id="plug"></span>
+
+		</div>
+
+		<div class="box inline right">
+			
+			<h3 class="box_header">Coste por hora</h3>
+			<h1 class="blue" id="cost"></span>
+
+		</div>
+
+	</div>
+
+	<div id="graph" style="height: 400px;"></div>
+
+</body>
+
+<script src="/static/js/jquery.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/static/js/highcharts.js"></script>
+<script defer="defer">
+  	
+	var energyCost = 0.105733
+
+	$(function () {
+	    
+	    $(document).ready(function() {
+			
+	    	var socket = io.connect('/');
+
+	    	socket.on('updates', function (data) {
+	    		var kw = (parseFloat(data.plug.power)/1000);
+				$('#power').text(kw + ' kW');
+				$('#temperature').text(data.sensor.temperature + 'ºC');
+				$('#humidity').text(data.sensor.humidity + '%');
+				$('#luminiscence').text(data.sensor.luminiscence + ' Lux');
+
+				$('#cost').text( (kw * energyCost) + '€/h' );
+
+				if(data.plug.plugActive === "true"){
+					$('#plug').html('<h1 class="green">On</h1>');
+				} else{
+					$('#plug').html('<h1 class="red">Off</h1>');
+				}
+
+            });
+	        Highcharts.setOptions({
+	            global: {
+	                useUTC: false
+	            }
+	        });
+	    
+			var chart;
+		    
+		    chart = new Highcharts.Chart({
+		        chart: {
+		            renderTo: 'graph', 
+		            defaultSeriesType: 'spline',
+		            backgroundColor: '#2E2E2E',
+		            events: {
+		                load: function() {
+		                    socket.on('updates', function (data) {
+		                    	console.log(data);
+		                        var series = chart.series[0];
+		                        series.addPoint([parseInt(data.ts, 10), parseFloat(data.plug.power)]);
+		                        if (chart.series[0].data.length >= 20) {
+									chart.series[0].data[0].remove();
+								}
+		                    });
+		                }
+		            }, style: {
+						fontFamily: 'Helvetica', // default font
+						fontSize: '12px'
+					},
+
+					borderRadius: 0
+		        },
+
+		        colors: ['#F78181'],
+
+		        title: {
+		            text: 'Potencia'
+		        },
+		        tooltip: {
+	                formatter: function() {
+	                        return '<b>'+ this.series.name +'</b><br/>'+ (this.y/1000) + ' kW'
+	                }
+	            },
+		        xAxis: {
+		            type: 'datetime',
+		            tickPixelInterval: 150,
+		            maxZoom: 5 * 1000
+		        },
+		        yAxis: {
+		            minPadding: 15,
+		            maxPadding: 15,
+		            title: {
+		                text: 'Potencia',
+		                margin: 80
+		            }
+		        },
+		        series: [{
+		            name: 'Potencia',
+		            data: []
+		        }]
+		    });
+
+	    });
+	    
+	});
+
+
+</script>
+
+</html>

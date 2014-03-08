@@ -4,7 +4,7 @@ var async = require('async');
 var Zwave = require(__dirname + '/lib/zwave');
 
 var zwave = new Zwave({
-	address: '0.0.0.0:8083'
+	address: '192.168.1.55:8083'
 });
 
 var lightOn = false;
@@ -17,14 +17,13 @@ setInterval(function () {
 
 	}, function (err, response, callback){
 
-		zwave.getDevice(2, function (err, data){
-			//console.log(data.instances[0].commandClasses[49].data[3].val.value);
+		zwave.getDeviceCommandClass(2, 0, 49, function (err, data){
 			callback(err, data);
 		});
 
 	}], function (err, data){
 
-		var luminosity = data.instances[0].commandClasses[49].data[3].val.value;
+		var luminosity = data.data[3].val.value;
 
 		if(luminosity <= 200){
 			if(!lightOn){
