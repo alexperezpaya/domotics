@@ -19,11 +19,11 @@ var gatherer = function (){
 
 			async.waterfall([function (callback){
 
-				zwave.update(2, 0, 49, callback);
+				zwave.update(6, 0, 49, callback);
 
 			}, function (err, response, callback){
 
-				zwave.getDeviceCommandClass(2, 0, 49, function (err, data){
+				zwave.getDeviceCommandClass(6, 0, 49, function (err, data){
 					//console.log(data.instances[0].commandClasses[49].data[3].val.value);
 					callback(err, data);
 				});
@@ -53,7 +53,7 @@ var gatherer = function (){
 				function (cb){
 
 					async.map([37, 49, 50], function (id, _cb){
-						zwave.update(5, 0, id, _cb);
+						zwave.update(7, 0, id, _cb);
 					}, function (err){
 						cb(err);
 					});
@@ -62,7 +62,7 @@ var gatherer = function (){
 
 				function (cb){
 
-					zwave.getDeviceCommandClasses(5, 0, function (err, data){
+					zwave.getDeviceCommandClasses(7, 0, function (err, data){
 
 						var result = {
 							plugActive: data[37].data.level.value,
